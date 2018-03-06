@@ -11,7 +11,7 @@
          <alias>Kindle</alias>
          <alias>Fire</alias>
          <alias>tablet</alias>
-         <description>It's a white Kindle, though it's age is starting to show.</description>
+         <description>A white Kindle tablet sits on the desk.</description>
          <action name="touch">
             <alias>feel</alias>
             <response>
@@ -29,6 +29,20 @@
          </action>
       </object>
       
+      <object name="backpack">
+         <description>A green army backpack in the corner looks as if it's seen better days.</description>
+         <action name="open">
+            <response>
+               <text>You undo the clasp and look inside.</text>
+            </response>
+         </action>
+         <object name="knife">
+            <description>A little pocket knife.  Won't cut much.</description>
+            <variable name="movable" value="true"/>
+         </object>
+         <variable name="movable" value="true"/>
+      </object>
+      
    </room>
    
    <!--  Game default actions -->
@@ -43,32 +57,84 @@
    <action name="look">
       <response>
          <text></text>
-         <code>Game.echo(Game.getCurrentRoom().getDescription());</code>
+         <code>
+            if (command.getObject().isEmpty())
+            {
+               Game.echo(room.getDescription());
+               Game.echo(room.listContents());
+            }
+            else
+            {
+               GameObject item = Game.get(command.getObject());
+               if (item != null)
+               {
+                  Game.echo(item.getDescription());
+                  Game.echo(item.listContents());
+               }
+               else
+               {
+                  Game.echo("I don't see one here.");
+               }
+            }
+         </code>
       </response>
    </action>
-   
+
    <action name="take">
       <alias>grab</alias>
       <alias>keep</alias>
       <response>
          <text></text>
          <code>
-            Command command = Game.currentCommand();
-            GameObject currentRoom = Game.getCurrentRoom();
-            GameObject item = currentRoom.get(command.getObject());
-            GameObject player = Game.player();
-            if ((item != null) &&
-                (item.getVar("movable").boolValue()))
+            GameObject item = Game.get(command.getObject());
+            if ((item != null) &amp;&amp;
+                (item.getVar("movable").asBool()))
             {
-               currentRoom.remove(item);
-               player.add(item);
-               
-               Game.echo("You added a %s to your inventory.", item.getName());
+               Game.move(item, inventory);
+               Game.echo("You add the %s to your inventory.\n", new Object[]{item.getName()});
+            }
+            else
+            {
+               Game.echo("Sorry, you can't take that.");
             }
          </code>
       </response>
    </action>
    
+   <action name="drop">
+      <alias>leave</alias>
+      <alias>deposit</alias>
+      <response>
+         <text></text>
+         <code>
+            GameObject item = inventory.get(command.getObject());
+            if (item != null)
+            {
+               Game.move(item, room);
+               Game.echo("You drop the %s in %s.\n", new Object[]{item.getName(), room.getName()});
+            }
+            else
+            {
+               Game.echo("You don't have one to drop.");
+            }
+         </code>
+      </response>
+   </action>
    
+   <action name="inventory">
+      <response>
+         <text>You take stock of your possessions:</text>
+         <code>
+            if (inventory.getObjects().size() == 0)
+            {
+               Game.echo("Nothing.");
+            }
+            else
+            {
+               Game.echo(inventory.listContents());
+            }
+         </code>
+      </response>
+   </action>
    
 </game>

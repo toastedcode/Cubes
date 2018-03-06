@@ -19,6 +19,15 @@ public class Console implements GameInput, GameOutput
          System.out.format("%s\n", text);
       }      
    }
+   
+   @Override
+   public void echo(String format, Object ... objects)
+   {
+      if (!format.isEmpty())
+      {
+         System.out.format(format, objects);
+      } 
+   }
 
    @Override
    public String read()

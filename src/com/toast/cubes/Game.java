@@ -33,6 +33,7 @@ public class Game
       output = console;
       
       player = new Player("me");
+      player.add(new GameObject("inventory"));
    }
    
    public static void load(String filename) throws IOException, XmlParseException, XmlFormatException
@@ -62,6 +63,9 @@ public class Game
    {
       Command command = null;
       
+      echo(gameObject.getDescription());
+      echo("You start in %s.\n", currentRoom.getName());
+      
       while (Game.getVar("gameOver").asBool() != true)
       {
          String commandString =  input.read();
@@ -81,6 +85,11 @@ public class Game
    public static void echo(String text)
    {
       output.echo(text);
+   }
+   
+   public static void echo(String format, Object ... objects)
+   {
+      output.echo(format, objects);
    }
    
    public static GameObject getCurrentRoom()
@@ -112,11 +121,12 @@ public class Game
       GameObject foundObject = null;
       
       StringTokenizer tokenizer = new StringTokenizer(query, ".");
+      
+      String token = tokenizer.nextToken();
+      
       if (tokenizer.hasMoreTokens())
-      {
-         String token = tokenizer.nextToken();
-         
-         switch (tokenizer.nextToken())
+      {      
+         switch (token)
          {
             case "game":
             {
@@ -161,10 +171,15 @@ public class Game
             default:
             {
                // Assume current room.
-               foundObject = currentRoom.get(tokenizer.nextToken(""));
+               foundObject = currentRoom.get(query);
                break;
             }
          }
+      }
+      else
+      {
+         // Assume current room.
+         foundObject = currentRoom.get(token);
       }
       
       return (foundObject);
@@ -266,18 +281,18 @@ public class Game
          response = gameObject.handleCommand(command);
       }
       
-      processResponse(response);
+      processResponse(command, response);
       
       return (response);
    }
    
-   private static void processResponse(Response response)
+   private static void processResponse(Command command, Response response)
    {
       if (response != null)
       {
          echo(response.getText());
          
-         executeCode(response.getCode());
+         executeCode(command, response.getCode());
       }
       else
       {
@@ -285,7 +300,7 @@ public class Game
       } 
    }
    
-   private static void executeCode(String code)
+   private static void executeCode(Command command, String code)
    {
       final String IMPORTS = "import com.toast.cubes.*;";
       
@@ -295,6 +310,12 @@ public class Game
       try
       {
          Interpreter interpreter = new Interpreter();
+         
+         interpreter.set("player",  player);
+         interpreter.set("room",  currentRoom);
+         interpreter.set("command",  command);
+         interpreter.set("inventory", player.get("inventory"));
+         
          interpreter.eval(code);
       } 
       catch (EvalError e)

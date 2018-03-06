@@ -46,7 +46,14 @@ public class GameObject
       // Description
       //
       
-      object.description = node.getChild("description").getValue();
+      if (node.hasChild("description"))
+      {
+         object.description = node.getChild("description").getValue();
+      }
+      else
+      {
+         object.description = "It's indiscribable.";
+      }
 
       //
       // Actions
@@ -120,9 +127,11 @@ public class GameObject
    {
       Response response = null;
       
-      if (command.getObject().isEmpty() ||
-          (command.getObject().equalsIgnoreCase(getName())) ||
-          (aliases.contains(command.getObject().toLowerCase())))
+      boolean isMatch = ((command.getObject().equalsIgnoreCase(getName())) ||
+                          (aliases.contains(command.getObject().toLowerCase())));
+      
+      // First, try to match this object, by name.
+      if (isMatch)
       {
          for (GameAction action : actions)
          {
@@ -133,7 +142,9 @@ public class GameObject
             }
          }
       }
-      else
+      
+      // Next, see if any child objects can handle it.
+      if (response == null)
       {
          for (GameObject object : objects.values())
          {
@@ -146,12 +157,38 @@ public class GameObject
          }         
       }
       
+      // Finally, if it's a top level object, try default actions.
+      if ((response == null) && (parent == null))
+      {
+         for (GameAction action : actions)
+         {
+            if (action.canHandle(command))
+            {
+               response = action.getResponse();
+               break;
+            }
+         }
+      }
+      
       return (response);
    }
    
    public String getDescription()
    {
       return (description);
+   }
+   
+   public String listContents()
+   {
+      StringBuilder builder = new StringBuilder();
+      
+      for (GameObject object : objects.values())
+      {
+         builder.append(object.getDescription());
+         builder.append("\n");
+      }
+      
+      return (builder.toString());      
    }
    
    public <T> void setVar(String name, T value)
@@ -209,16 +246,16 @@ public class GameObject
    
    public void remove(GameObject object)
    {
-      objects.remove(object);
+      objects.remove(object.getName());
       object.parent = null;
    }
    
-   protected Map<String, GameObject> getObjects()
+   public Map<String, GameObject> getObjects()
    {
       return (objects);
    }
    
-   protected List<GameAction> getActions()
+   public List<GameAction> getActions()
    {
       return (actions);
    }
