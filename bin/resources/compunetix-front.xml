@@ -1,0 +1,93 @@
+<room name="compunetix-front">
+
+   <description>You are standing in front of a large office building.  It's green brick walls rise up a full eight stories.  The sign at the entrance reads "Compunetix".</description>
+   
+   <object name="bushes">
+      <alias>bush</alias>
+      <alias>shrub</alias>
+      <alias>plant</alias>
+      <description>A number of bushes line the walkway.</description>
+      <details>Someone should clean this place up.  There's a bunch of trash stuck in there.</details>
+      <action name="punch">
+         <alias>hit</alias>
+         <alias>strike</alias>
+	      <response>
+	         <text>Now your hand is all scratched up.  Don't you feel silly.</text>
+	      </response>
+	   </action>
+	   <action name="shake">
+         <alias>hit</alias>
+         <alias>strike</alias>
+         <response>
+            <text>You shake the bush with all your might.  A scrap of paper falls to the ground.</text>
+            <code>room.get("paper").setVisible(true);</code>
+         </response>
+      </action>
+   </object>
+   
+   <object name="paper" visible="false" portable="true">
+      <alias>scrap</alias>
+      <alias>note</alias>
+      <description>A scrap of paper has been shaken loose from one of the decorative shrubs.</description>
+      <details>It's a note, written in sloppy handwriting.  It seems important.</details>
+      <action name="read">
+         <response>
+            <text>The words are barely legible but you can make most of them out: "PLEASE HELP!  I'M BEING HELD AGAINST MY WILL ON THE TOP FLOOR.  P.S. DON'T TRUST ANYONE INSIDE!"</text>
+         </response>
+      </action>
+   </object>
+   
+   <object name="door">
+      <description>A glass door leads inside.</description>
+      <details>There's a little scanner to one side.  Unless you work here, you're not getting in.</details>
+      <action name="punch">
+         <alias>force</alias>
+         <alias>break</alias>
+         <response>
+            <text>Do that again and the police are going to show up.</text>
+            <text>The security guard inside is starting to get angry.</text>
+            <code>
+            object.setVar("punchCount", object.getVar("punchCount").asInt() + 1); 
+            if (object.getVar("punchCount") == 3)
+            {
+               Game.echo("The security guard storms out of the front door, breathing bloody murder.  He punches you twice in throat.\nThe last thing you see before you lose consciousness is his swollen angry face staring down at you.");
+               Game.setVar("gameOver", true);
+            }
+            </code>
+         </response>
+      </action>
+      <action name="open">
+         <alias>enter</alias>
+         <response>
+            <text>Not going to happen without the proper credentials.</text>
+         </response>
+      </action>
+   </object>
+   
+   <object name="garage">
+      <description>To your right is a large multi-level parking garage.</description>
+      <details>The parking garage is pretty full right now.  Might be worth checking out.</details>
+      <action name="go">
+         <alias>enter</alias>
+         <alias>walk</alias>
+         <response>
+            <text>You walk over to the garage.</text>
+            <code>player.moveTo("garage");</code>
+         </response>
+      </action>
+   </object>
+   
+   <object name="back">
+      <alias>behind</alias>
+      <alias>rear</alias>
+      <description>You could probably get behind the building ... if no one was watching.</description>
+      <action name="go">
+         <alias>walk</alias>
+         <response>
+            <text>You walk around to the rear of the building.</text>
+            <code>player.moveTo("compunetix-back");</code>
+         </response>
+      </action>
+   </object>
+   
+</room>      
