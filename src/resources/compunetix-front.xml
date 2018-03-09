@@ -48,10 +48,10 @@
             <text>The security guard inside is starting to get angry.</text>
             <code>
             object.setVar("punchCount", object.getVar("punchCount").asInt() + 1); 
-            if (object.getVar("punchCount") == 3)
+            if (object.getVar("punchCount").asInt() == 3)
             {
                Game.echo("The security guard storms out of the front door, breathing bloody murder.  He punches you twice in throat.\nThe last thing you see before you lose consciousness is his swollen angry face staring down at you.");
-               Game.setVar("gameOver", true);
+               player.setVar("gameOver", true);
             }
             </code>
          </response>
@@ -60,6 +60,13 @@
          <alias>enter</alias>
          <response>
             <text>Not going to happen without the proper credentials.</text>
+         </response>
+      </action>
+      <action name="push">
+         <alias>pull</alias>
+         <alias>go</alias>
+         <response>
+            <text>It won't budge.</text>
          </response>
       </action>
    </object>
@@ -72,7 +79,7 @@
          <alias>walk</alias>
          <response>
             <text>You walk over to the garage.</text>
-            <code>player.moveTo("garage");</code>
+            <code>player.moveTo("parking-garage");</code>
          </response>
       </action>
    </object>

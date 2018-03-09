@@ -185,15 +185,18 @@ public class GameObject
       return (parent);
    }
    
+   public boolean match(String objectName)
+   {
+      return ((name.equalsIgnoreCase(objectName)) ||
+              (aliases.contains(objectName.toLowerCase())));
+   }
+   
    public Response handleCommand(Command command)
    {
       Response response = null;
       
-      boolean isMatch = ((command.getObject().equalsIgnoreCase(getName())) ||
-                          (aliases.contains(command.getObject().toLowerCase())));
-      
       // First, try to match this object, by name.
-      if (isMatch)
+      if (match(command.getObject()))
       {
          for (GameAction action : actions)
          {
@@ -310,31 +313,50 @@ public class GameObject
       return (variable);
    }
    
-   public boolean contains(String name)
+   public boolean contains(String objectName)
    {
-      return (objects.get(name) != null);
+      boolean containsObject = false;
+      
+      for (GameObject object : objects.values())
+      {
+         if (object.match(objectName))
+         {
+            containsObject = true;
+            break;
+         }
+      }
+      
+      return (containsObject);
+   }
+   
+   public boolean contains(GameObject object)
+   {
+      return (objects.containsValue(object));
    }
    
    public GameObject get(String query)
    {
       GameObject foundObject = null;
       
-      StringTokenizer tokenizer = new StringTokenizer(query, ".");
-      
-      String token = tokenizer.nextToken();
-      
-      if (tokenizer.hasMoreTokens())
+      if (!query.isEmpty())
       {
-         GameObject childObject = objects.get(token);
+         StringTokenizer tokenizer = new StringTokenizer(query, ".");
          
-         if (childObject != null)
+         String token = tokenizer.nextToken();
+         
+         for (GameObject object : objects.values())
          {
-            foundObject = childObject.get(tokenizer.nextToken(""));   
+            if (object.match(token))
+            {
+               foundObject = object;
+               break;
+            }
          }
-      }
-      else
-      {
-         foundObject = objects.get(token);
+         
+         if ((foundObject != null) && tokenizer.hasMoreTokens())
+         {
+            foundObject = foundObject.get(tokenizer.nextToken("")); 
+         }
       }
       
       return (foundObject);

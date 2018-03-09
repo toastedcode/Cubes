@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.toast.cubes.io.Console;
-import com.toast.cubes.io.GameInput;
-import com.toast.cubes.io.GameOutput;
 import com.toast.xml.XmlDocument;
 import com.toast.xml.XmlNode;
 import com.toast.xml.XmlNodeList;
@@ -64,7 +61,7 @@ public class Game
    
    public static void run()
    {
-      while (Game.getVar("gameOver").asBool() != true)
+      while (!players.isEmpty())
       {
       }      
    }
@@ -82,10 +79,16 @@ public class Game
       // Allow the player's room to handle the command.
       response = player.getRoom().handleCommand(command);
       
-      // If unhandled, try the game's set of default actions.
+      // If unhandled, try the items in the player's inventory.
       if (response == null)
       {
-         response = gameObject.handleCommand(command);
+         response = player.get("inventory").handleCommand(command);
+         
+         // If still no response, try the global game object.
+         if (response == null)
+         {
+            response = gameObject.handleCommand(command);
+         }
       }
       
       processResponse(player, command, response);
@@ -229,6 +232,21 @@ public class Game
       gameObject.setVar(name,  value);
    }
    
+   public static void addPlayer(Player player)
+   {
+      players.put(player.getName(), player);
+   }
+   
+   public static void removePlayer(String name)
+   {
+      players.remove(name);
+   }
+   
+   public static Player getPlayer(String name)
+   {
+      return (players.get(name));
+   }
+   
    // **************************************************************************
    
    private static void load(XmlNode node) throws IOException, XmlFormatException, XmlParseException
@@ -288,7 +306,11 @@ public class Game
       {
          echo(response.getText());
          
-         executeCode(player, command, response.getCode());
+         GameObject object = response.getParent().getParent();
+         GameObject room = player.getRoom();
+         String code = response.getCode();
+         
+         executeCode(player, room, object, command, code);
       }
       else
       {
@@ -296,7 +318,7 @@ public class Game
       } 
    }
    
-   private static void executeCode(Player player, Command command, String code)
+   private static void executeCode(Player player, GameObject room, GameObject object, Command command, String code)
    {
       final String IMPORTS = "import com.toast.cubes.*;";
       
@@ -307,10 +329,9 @@ public class Game
       {
          Interpreter interpreter = new Interpreter();
          
-         GameObject room = player.getRoom();
-         
          interpreter.set("player",  player);
          interpreter.set("room", room);
+         interpreter.set("object",  object);
          interpreter.set("command",  command);
          interpreter.set("inventory", player.get("inventory"));
          

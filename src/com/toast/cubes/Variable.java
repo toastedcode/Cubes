@@ -36,17 +36,50 @@ public class Variable
    
    public double asDouble()
    {
-      return (Double.valueOf(value));
+      double doubleValue = 0;
+      
+      try
+      {
+         doubleValue = Double.valueOf(value);
+      }
+      catch (NumberFormatException e)
+      {
+         // TODO.
+      }
+      
+      return (doubleValue);
    }
    
    public int asInt()
    {
-      return (Integer.valueOf(value));
+      int intValue = 0;
+      
+      try
+      {
+         intValue = Integer.valueOf(value);
+      }
+      catch (NumberFormatException e)
+      {
+         // TODO.
+      }
+      
+      return (intValue);
    }
    
    public float asFloat()
    {
-      return (Float.valueOf(value));
+      float floatValue = 0;
+      
+      try
+      {
+         floatValue = Float.valueOf(value);
+      }
+      catch (NumberFormatException e)
+      {
+         // TODO.
+      }
+      
+      return (floatValue);
    }
    
    public String asString()

@@ -1,6 +1,9 @@
 package com.toast.cubes;
 
+import java.util.Random;
+
 import com.toast.xml.XmlNode;
+import com.toast.xml.XmlNodeList;
 import com.toast.xml.exception.XmlFormatException;
 
 public class Response
@@ -9,9 +12,15 @@ public class Response
    {
       Response response = new Response();
       
-      if (node.hasChild("text"))
+      XmlNodeList childNodes = node.getChildren("text");
+      
+      response.text = new String[childNodes.size()];
+      
+      int i = 0;
+      for (XmlNode childNode : childNodes)
       {
-         response.text = node.getChild("text").getValue();
+         response.text[i] = childNode.getValue();
+         i++;
       }
       
       if (node.hasChild("code"))
@@ -34,7 +43,15 @@ public class Response
    
    public String getText()
    {
-      return (text);
+      String responseText = "";
+      
+      if (text.length > 0)
+      {
+         int index = new Random().nextInt(text.length);
+         responseText = text[index];
+      }
+      
+      return (responseText);
    }
    
    public String getCode()
@@ -44,7 +61,7 @@ public class Response
    
    private GameAction parent;
    
-   private String text = "";
+   private String[] text;
    
    private String code = "";
 }

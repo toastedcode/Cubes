@@ -52,7 +52,20 @@ public class Player extends GameObject implements Runnable
    
    public boolean moveTo(String roomName)
    {
-      return (false);   
+      boolean moved = false;
+      
+      GameObject nextRoom = Game.getRoom(roomName);
+      
+      if (nextRoom != null)
+      {
+         room = nextRoom;
+         
+         echo(room.getDescription());
+         
+         moved = true;
+      }
+      
+      return (moved);
    }
    
    // **************************************************************************
@@ -69,6 +82,8 @@ public class Player extends GameObject implements Runnable
          
          Game.handleCommand(this, command);
       }
+      
+      Game.removePlayer(getName());
    }
    
    private static GameObject room;

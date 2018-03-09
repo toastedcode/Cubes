@@ -1,0 +1,119 @@
+<game name="cubes">
+
+   <start>compunetix-front</start>
+   
+   <description>A puzzle solving game set the cubes of Compunetix.</description>
+   
+   <!--  Rooms -->
+   
+   <room src="/resources/compunetix-front.xml"/>
+   <room src="/resources/parking-garage.xml"/>
+   
+   <!--  Game default actions -->
+   
+   <action name="quit">
+      <response>
+         <text>Thanks for playing!</text>
+         <code>player.setVar("gameOver", true);</code>
+      </response>
+   </action>
+   
+   <action name="look">
+      <alias>search</alias>
+      <alias>examine</alias>
+      <response>
+         <text></text>
+         <code>
+            if (command.getObject().isEmpty())
+            {
+               player.echo(room.getDescription());
+               player.echo(room.getDetails());
+               player.echo(room.listContents());
+            }
+            else
+            {
+               // First check the room.
+               GameObject item = room.get(command.getObject());
+               
+               // Then check the player's inventory.
+               if (item == null)
+               {
+                  item = inventory.get(command.getObject());
+               }
+               
+               if ((item != null) &amp;&amp;
+                   (item.isVisible()))
+               {
+                  player.echo(item.getDescription());
+                  player.echo(item.getDetails());
+                  player.echo(item.listContents());
+               }
+               else
+               {
+                  player.echo("I don't see one here.");
+               }
+            }
+         </code>
+      </response>
+   </action>
+
+   <action name="take">
+      <alias>grab</alias>
+      <alias>keep</alias>
+      <response>
+         <text></text>
+         <code>
+            GameObject item = room.get(command.getObject());
+            
+            if ((item != null) &amp;&amp;
+                (item.isVisible()) &amp;&amp;
+                (item.isProperty(GameObject.Property.PORTABLE)))
+            {
+               Game.move(item, inventory);
+               player.echo("You add the %s to your inventory.\n", new Object[]{item.getName()});
+            }
+            else
+            {
+               player.echo("Sorry, you can't take that.");
+            }
+         </code>
+      </response>
+   </action>
+   
+   <action name="drop">
+      <alias>leave</alias>
+      <alias>deposit</alias>
+      <response>
+         <text></text>
+         <code>
+            GameObject item = inventory.get(command.getObject());
+            if (item != null)
+            {
+               Game.move(item, room);
+               player.echo("You drop the %s in %s.\n", new Object[]{item.getName(), room.getName()});
+            }
+            else
+            {
+               player.echo("You don't have one to drop.");
+            }
+         </code>
+      </response>
+   </action>
+   
+   <action name="inventory">
+      <response>
+         <text>You take stock of your possessions:</text>
+         <code>
+            if (inventory.getObjects().size() == 0)
+            {
+               player.echo("Nothing.");
+            }
+            else
+            {
+               player.echo(inventory.listContents());
+            }
+         </code>
+      </response>
+   </action>
+   
+</game>

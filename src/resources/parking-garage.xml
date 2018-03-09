@@ -1,0 +1,92 @@
+<room name="parking-garage">
+
+   <description>You're in a dingy parking garage.</description>
+   <details>The whole place stinks of exhaust fumes and urine.</details>
+   
+   <object name="president's car">
+      <alias>car</alias>
+      <description>The company president's car is parked up front.</description>
+      <details>It's  late model Lexus.  Not a scratch on it.  You can tell whoever owns this car loves it very much.</details>
+      <action name="punch">
+         <alias>hit</alias>
+         <alias>strike</alias>
+	      <response>
+	         <text>A car alarm sounds loudly.  You fool.</text>
+	      </response>
+	   </action>
+	   <action name="key">
+         <response>
+            <code>
+	            if (inventory.contains("key"))
+	            {
+	               player.echo("You scrape a long jagged line along the side of the car.");
+	               plahyer.echo("Moments later, burly men with bushy arm hair and gold chains descend on you.  You finally die when Guido gouges out your eye with this thumb.");
+	               player.setVar("gameOver", true);
+	            }
+	            else
+	            {
+	               player.echo("Don't be a dick.  Luckily, you don't have a key.");   
+	            }
+            </code>
+         </response>
+      </action>
+   </object>
+   
+   <object name="adam">
+      <description>You see Adam passed out in one corner.</description>
+      <details>He smells of liquor and board games.  Another bender, no doubt.</details>
+      <action name="punch">
+         <alias>hit</alias>
+         <alias>strike</alias>
+         <alias>touch</alias>
+         <response>
+            <text>He grunts, but doesn't move all all.</text>
+         </response>
+      </action>
+      <action name="look">
+         <alias>examine</alias>
+         <alias>search</alias>
+         <response>
+            <text>There's a Compunetix security card around his neck.  Covered in drool, unfortuantely.</text>
+            <code>
+               room.get("security-card").setVisible(true);
+            </code>
+         </response>
+      </action>
+   </object>
+   
+   <object name="security-card" visible="false" portable="true">
+      <alias>card</alias>
+      <description>A Compunetix security card.</description>
+      <details>The name on the front reads "Warbeezy".</details>
+      <action name="use">
+         <alias>swipe</alias>
+         <response>
+            <code>
+               if ((inventory.contains("security-card")) &amp;&amp;
+                   (room.match("compunetix-front")))
+               {
+                  player.echo("You swipe the security card at the door.  There is a whirr, a click, and then the door opens.");
+                  player.echo("The receptionist smiles at you.  Hello ... um, ... Adam.");
+                  player.moveTo("first-floor");
+               }
+               else
+               {
+                  player.echo("There's no place to use that here.");
+               }
+            </code>
+         </response>
+      </action>
+   </object>
+   
+   <object name="outside">
+      <action name="go">
+         <alias>walk</alias>
+         <response>
+            <text>You exit the parking garage, squinting as you enter the bright sunlight.</text>
+            <code>player.moveTo("compunetix-front");</code>
+         </response>
+      </action>
+   </object>
+   
+</room>      
