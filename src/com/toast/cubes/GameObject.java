@@ -14,15 +14,16 @@ import com.toast.xml.exception.XmlFormatException;
 
 public class GameObject
 {
-   enum Property
+   public enum Property
    {
-      VISIBLE("visible", 0x0001),
-      PORTABLE("portable", 0x0002);
+      VISIBLE("visible", 0x0001, true),
+      PORTABLE("portable", 0x0002, false);
       
-      Property(String name, int mask)
+      Property(String name, int mask, boolean defaultValue)
       {
          this.name = name;
          this.mask = mask;
+         this.defaultValue = defaultValue;
       }
       
       String getName()
@@ -35,9 +36,16 @@ public class GameObject
          return (mask);
       }
       
+      boolean getDefaultValue()
+      {
+         return (defaultValue);
+      }
+      
       private String name;
       
       private int mask;
+      
+      private boolean defaultValue;
    };
    
    public static void addToDictionary(String object)
@@ -141,16 +149,20 @@ public class GameObject
       
       for (Property property : Property.values())
       {
+         boolean value = property.getDefaultValue();
+         
          if (node.hasAttribute(property.getName()))
          {
-            if (node.getAttribute(property.getName()).getBoolValue())
-            {
-               object.setProperty(property);
-            }
-            else
-            {
-               object.clearProperty(property);
-            }
+            value = node.getAttribute(property.getName()).getBoolValue();
+         }
+         
+         if (value)
+         {
+            object.setProperty(property);
+         }
+         else
+         {
+            object.clearProperty(property);
          }
       }
       
@@ -248,14 +260,34 @@ public class GameObject
       properties &= ~(property.getMask());
    }
    
+   public boolean isVisible()
+   {
+      return (isProperty(Property.VISIBLE));
+   }
+   
+   public void setVisible(boolean visible)
+   {
+      if (visible)
+      {
+         setProperty(Property.VISIBLE);
+      }
+      else
+      {
+         clearProperty(Property.VISIBLE);
+      }
+   }
+   
    public String listContents()
    {
       StringBuilder builder = new StringBuilder();
       
       for (GameObject object : objects.values())
       {
-         builder.append(object.getDescription());
-         builder.append("\n");
+         if (object.isProperty(Property.VISIBLE))
+         {
+            builder.append(object.getDescription());
+            builder.append("\n");
+         }
       }
       
       return (builder.toString());      

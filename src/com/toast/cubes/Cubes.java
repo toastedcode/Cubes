@@ -11,9 +11,9 @@ public class Cubes
    {
       try
       {
-         Game.setup();
+         Game.load("/resources/game.xml");
          
-         Game.load("/resources/testGame.xml");
+         Game.setup();
          
          Game.run();
       }

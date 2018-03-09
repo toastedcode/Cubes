@@ -36,7 +36,7 @@ public class Game
    
    public static void load(String filename) throws IOException, XmlParseException, XmlFormatException
    {
-      String pathString = Game.class.getResource("/resources/testGame.xml").getFile();
+      String pathString = Game.class.getResource(filename).getFile();
       pathString = new File(pathString).getAbsolutePath();
       
       XmlDocument document = new XmlDocument();
@@ -66,12 +66,6 @@ public class Game
    {
       while (Game.getVar("gameOver").asBool() != true)
       {
-         // TODO: Move to Player
-         /*
-         String commandString =  input.read();
-         command = Command.parse(commandString);
-         handleCommand(player, command);
-         */
       }      
    }
    
@@ -237,7 +231,7 @@ public class Game
    
    // **************************************************************************
    
-   private static void load(XmlNode node) throws XmlFormatException
+   private static void load(XmlNode node) throws IOException, XmlFormatException, XmlParseException
    {
       //
       // Global objects, variables, actions
@@ -250,14 +244,25 @@ public class Game
       //
       
       XmlNodeList childNodes = node.getChildren("room");
-
+      
       for (XmlNode roomNode : childNodes)
       {
-         GameObject room = GameObject.load(roomNode);
-         
-         if (room != null)
+         if (roomNode.hasAttribute("src"))
          {
-            rooms.put(room.getName(),  room);
+            // Load from external file.
+            
+            loadRoom(roomNode.getAttribute("src").getValue());
+         }
+         else
+         {
+            // Load fron internal room node.
+            
+            GameObject room = GameObject.load(roomNode);
+            
+            if (room != null)
+            {
+               rooms.put(room.getName(),  room);
+            }
          }
       }
      

@@ -23,7 +23,8 @@ public class Player extends GameObject implements Runnable
    public void start()
    {
       echo(Game.getDescription());
-      echo("You start in %s.\n", room.getName());
+      echo("Your journey ... begins.");
+      echo(room.getDescription());
       
       // Start the player loop.
       new Thread(this).start();
