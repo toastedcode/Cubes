@@ -27,13 +27,11 @@ public class Game
    
    public static void setup()
    {
-      Console console = new Console();
+      Player player = new Player("Parzival");
       
-      input = console;
-      output = console;
+      players.put(player.getName(), player);
       
-      player = new Player("me");
-      player.add(new GameObject("inventory"));
+      player.start();
    }
    
    public static void load(String filename) throws IOException, XmlParseException, XmlFormatException
@@ -48,32 +46,32 @@ public class Game
       load(document.getRootNode());
    }
    
-   public static void loadRoom(String filename) throws IOException, XmlParseException, XmlFormatException
+   public static GameObject loadRoom(String filename) throws IOException, XmlParseException, XmlFormatException
    {
+      String pathString = Game.class.getResource(filename).getFile();
+      pathString = new File(pathString).getAbsolutePath();
+
       XmlDocument document = new XmlDocument();
       
-      document.load(filename);
+      document.load(pathString);
       
       GameObject room = GameObject.load(document.getRootNode());
       
-      setCurrentRoom(room);
+      rooms.put(room.getName(), room);
+      
+      return (room);
    }
    
    public static void run()
    {
-      Command command = null;
-      
-      echo(gameObject.getDescription());
-      echo("You start in %s.\n", currentRoom.getName());
-      
       while (Game.getVar("gameOver").asBool() != true)
       {
+         // TODO: Move to Player
+         /*
          String commandString =  input.read();
-         
          command = Command.parse(commandString);
-         
-         handleCommand(command);
-         
+         handleCommand(player, command);
+         */
       }      
    }
    
@@ -82,41 +80,66 @@ public class Game
       Game.setVar("gameOver",  true);
    }
    
+   
+   public static Response handleCommand(Player player, Command command)
+   {
+      Response response = null;
+      
+      // Allow the player's room to handle the command.
+      response = player.getRoom().handleCommand(command);
+      
+      // If unhandled, try the game's set of default actions.
+      if (response == null)
+      {
+         response = gameObject.handleCommand(command);
+      }
+      
+      processResponse(player, command, response);
+      
+      return (response);
+   }   
+   
    public static void echo(String text)
    {
-      output.echo(text);
+      for (Player player : players.values())
+      {
+         player.echo(text);
+      }
    }
    
    public static void echo(String format, Object ... objects)
    {
-      output.echo(format, objects);
+      for (Player player : players.values())
+      {
+         player.echo(format, objects);
+      }
    }
    
-   public static GameObject getCurrentRoom()
+   public static String getDescription()
    {
-      return (currentRoom);
+      return (gameObject.getDescription());
    }
    
-   public static void setCurrentRoom(GameObject room)
+   public static String getDetails()
    {
-      currentRoom = room;
+      return (gameObject.getDetails());
    }
-   
+  
    public static GameObject getRoom(String name)
    {
       return (rooms.get(name));
    }
    
+   public static GameObject getStartRoom()
+   {
+      return (startRoom);
+   }
+   
    public static GameObject get(String query)
    {
       // get("rooms.kitchen.table.box")
-      // get("here.cupboard.coat")
-      // get("self.inventory.sword")
       // get("players.rob.inventory.shield")
       // get("game.score")
-      // get("potion")  // assumes current room
-      // get("fridge.apple")  // assumes current room
-      // get("*.banana");  // look everywhere
       
       GameObject foundObject = null;
       
@@ -128,23 +151,15 @@ public class Game
       {      
          switch (token)
          {
-            case "game":
-            {
-               foundObject = gameObject.get(tokenizer.nextToken(""));
-               break;
-            }
-            
             case "players":
             {
                if (tokenizer.hasMoreTokens())
                {
-                  /*
                   GameObject player = players.get(tokenizer.nextToken());
                   if (player != null)
                   {
                      foundObject = player.get(tokenizer.nextToken(""));
                   }
-                  */
                }
                break;
             }
@@ -162,24 +177,18 @@ public class Game
                break;
             }
             
-            case "self":
-            {
-               foundObject = player.get(tokenizer.nextToken(""));
-               break;
-            }
-            
             default:
+            case "game":
             {
-               // Assume current room.
-               foundObject = currentRoom.get(query);
+               foundObject = gameObject.get(tokenizer.nextToken(""));
                break;
             }
          }
       }
       else
       {
-         // Assume current room.
-         foundObject = currentRoom.get(token);
+         // Assume game object.
+         foundObject = gameObject.get(tokenizer.nextToken(""));
       }
       
       return (foundObject);
@@ -259,40 +268,22 @@ public class Game
       String start = node.getChild("start").getValue();
       if (rooms.containsKey(start))
       {
-         currentRoom = getRoom(start);
+         setVar("startRoom", start);
       }
       else
       {
          // If not specified, get an arbitrary room.
-         currentRoom = getRoom((String)rooms.keySet().toArray()[0]);
+         setVar("startRoom", rooms.keySet().toArray()[0]);
       }
    }
    
-   private static Response handleCommand(Command command)
-   {
-      Response response = null;
-      
-      // Allow the room to handle the command.
-      response = currentRoom.handleCommand(command);
-      
-      // If unhandled, try the game's set of default actions.
-      if (response == null)
-      {
-         response = gameObject.handleCommand(command);
-      }
-      
-      processResponse(command, response);
-      
-      return (response);
-   }
-   
-   private static void processResponse(Command command, Response response)
+   private static void processResponse(Player player, Command command, Response response)
    {
       if (response != null)
       {
          echo(response.getText());
          
-         executeCode(command, response.getCode());
+         executeCode(player, command, response.getCode());
       }
       else
       {
@@ -300,7 +291,7 @@ public class Game
       } 
    }
    
-   private static void executeCode(Command command, String code)
+   private static void executeCode(Player player, Command command, String code)
    {
       final String IMPORTS = "import com.toast.cubes.*;";
       
@@ -311,8 +302,10 @@ public class Game
       {
          Interpreter interpreter = new Interpreter();
          
+         GameObject room = player.getRoom();
+         
          interpreter.set("player",  player);
-         interpreter.set("room",  currentRoom);
+         interpreter.set("room", room);
          interpreter.set("command",  command);
          interpreter.set("inventory", player.get("inventory"));
          
@@ -324,16 +317,12 @@ public class Game
       }
    }
    
-   private static GameInput input;
-   
-   private static GameOutput output;
-   
    // Global objects, variables, actions.
    private static GameObject gameObject;
    
+   private static Map<String, Player> players = new HashMap<>();
+   
    private static Map<String, GameObject> rooms = new HashMap<>();
    
-   private static GameObject currentRoom;
-   
-   private static Player player;
+   private static GameObject startRoom;
 }

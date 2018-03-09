@@ -4,6 +4,8 @@
    
    <!--  Rooms -->
    
+   <room src="/resources/compunetix-front.xml"/>
+   
    <room name="Jason's cube">
       <description>It's your typical office cubicle. Jason keeps this place pretty neat.</description>
       
@@ -43,6 +45,18 @@
          <variable name="movable" value="true"/>
       </object>
       
+      <object name="orb">
+         <description>A glowing orb sits in the middle of the floor ... beconing you.</description>
+         <action name="touch">
+            <alias>take</alias>
+            <alias>feel</alias>
+            <response>
+               <text>As soon as you touch the orb, a brilliant light envelops you.</text>
+               <code>GameObject room = Game.loadRoom("/resources/bathroom.xml"); Game.setCurrentRoom(room);</code>
+            </response>
+         </action>
+      </object>
+      
    </room>
    
    <!--  Game default actions -->
@@ -61,6 +75,7 @@
             if (command.getObject().isEmpty())
             {
                Game.echo(room.getDescription());
+               Game.echo(room.getDetails());
                Game.echo(room.listContents());
             }
             else
@@ -69,6 +84,7 @@
                if (item != null)
                {
                   Game.echo(item.getDescription());
+                  Game.echo(item.getDetails());
                   Game.echo(item.listContents());
                }
                else
@@ -88,7 +104,7 @@
          <code>
             GameObject item = Game.get(command.getObject());
             if ((item != null) &amp;&amp;
-                (item.getVar("movable").asBool()))
+                (item.isProperty(GameObject.PORTABLE)))
             {
                Game.move(item, inventory);
                Game.echo("You add the %s to your inventory.\n", new Object[]{item.getName()});

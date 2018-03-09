@@ -14,6 +14,32 @@ import com.toast.xml.exception.XmlFormatException;
 
 public class GameObject
 {
+   enum Property
+   {
+      VISIBLE("visible", 0x0001),
+      PORTABLE("portable", 0x0002);
+      
+      Property(String name, int mask)
+      {
+         this.name = name;
+         this.mask = mask;
+      }
+      
+      String getName()
+      {
+         return (name);
+      }
+      
+      int getMask()
+      {
+         return (mask);
+      }
+      
+      private String name;
+      
+      private int mask;
+   };
+   
    public static void addToDictionary(String object)
    {
       dictionary.add(object);
@@ -43,7 +69,7 @@ public class GameObject
       }
 
       //
-      // Description
+      // Description, Details
       //
       
       if (node.hasChild("description"))
@@ -53,6 +79,11 @@ public class GameObject
       else
       {
          object.description = "It's indiscribable.";
+      }
+      
+      if (node.hasChild("details"))
+      {
+         object.details = node.getChild("details").getValue();
       }
 
       //
@@ -68,6 +99,7 @@ public class GameObject
          if (action != null)
          {
             object.actions.add(action);
+            action.setParent(object);
          }
       }
       
@@ -103,6 +135,24 @@ public class GameObject
          }
       }
       
+      //
+      // Properties
+      //
+      
+      for (Property property : Property.values())
+      {
+         if (node.hasAttribute(property.getName()))
+         {
+            if (node.getAttribute(property.getName()).getBoolValue())
+            {
+               object.setProperty(property);
+            }
+            else
+            {
+               object.clearProperty(property);
+            }
+         }
+      }
       
       return (object);
    }
@@ -176,6 +226,26 @@ public class GameObject
    public String getDescription()
    {
       return (description);
+   }
+   
+   public String getDetails()
+   {
+      return (details);
+   }
+   
+   public boolean isProperty(Property property)
+   {
+      return ((properties & property.getMask()) > 0);
+   }
+   
+   public void setProperty(Property property)
+   {
+      properties |= property.getMask();
+   }
+   
+   public void clearProperty(Property property)
+   {
+      properties &= ~(property.getMask());
    }
    
    public String listContents()
@@ -275,4 +345,8 @@ public class GameObject
    private List<String> aliases = new ArrayList<>();
    
    private String description = "";
+   
+   private String details = "";
+   
+   private int properties;
 }

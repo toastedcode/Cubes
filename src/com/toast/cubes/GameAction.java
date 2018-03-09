@@ -37,6 +37,7 @@ public class GameAction
       
       XmlNode responseNode = node.getChild("response");
       action.response = Response.load(responseNode);
+      action.response.setParent(action);
       
       return (action);
    }
@@ -45,6 +46,16 @@ public class GameAction
    {
       this.name = name;
       addToDictionary(name);
+   }
+   
+   public GameObject getParent()
+   {
+      return (parent);
+   }
+   
+   public void setParent(GameObject parent)
+   {
+      this.parent = parent;
    }
    
    public boolean canHandle(Command command)
@@ -64,4 +75,6 @@ public class GameAction
    private List<String> aliases = new ArrayList<>();
    
    private Response response;
+   
+   private GameObject parent;
 }

@@ -1,0 +1,17 @@
+<room name="Jason's cube">
+   <description>You are in a tiny men's room.  There is water on the floor from an old leak.</description>
+   <object name="sink">
+      <description>A dirty sink is on one wall.  It's clogged and filled with stinking water.</description>
+   </object>
+   <object name="orb">
+   <description>A glowing orb sits in the middle of the floor ... beconing you.</description>
+   <action name="touch">
+      <alias>take</alias>
+      <alias>feel</alias>
+      <response>
+         <text>As soon as you touch the orb, a brilliant light envelops you.</text>
+         <code>Game.setCurrentRoom(Game.getRoom("Jason's cube"));</code>
+      </response>
+   </action>
+</object>
+</room>      

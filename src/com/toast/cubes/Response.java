@@ -22,6 +22,16 @@ public class Response
       return (response);
    }
    
+   public GameAction getParent()
+   {
+      return (parent);
+   }
+   
+   public void setParent(GameAction parent)
+   {
+      this.parent = parent;
+   }
+   
    public String getText()
    {
       return (text);
@@ -31,6 +41,8 @@ public class Response
    {
       return (code);
    }
+   
+   private GameAction parent;
    
    private String text = "";
    
